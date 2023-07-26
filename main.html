@@ -5,8 +5,106 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
+    <canvas id="myCanvas">
+
+    </canvas>
+
+    <script>
+        myCanvas.width=window.innerWidth;
+        myCanvas.height=window.innerHeight;
+
+        const A={x:100,y:300};
+        const B={x:400,y:100};
+
+        const orange={r:230, g:150, b:0};
+        const blue={r:0, g:70, b:160};
+
+
+        const ctx=myCanvas.getContext("2d");
+
+        let audioCtx=null;
+        myCanvas.onClick=function(){
+            if(audioCtx==null){
+                audioCtx=new(
+                    AudioContext ||
+                    webkitAudioContext ||
+                    window.webkitAudioContext
+                )();
+                const osc=audioCtx.createOscillator();
+                osc.frequency.value=200;
+                osc.start()
+
+                const node=audioCtx.createGain();
+                node.gain.value=0.1;
+
+                osc.connect(node);
+                node.connect(audioCtx.destination);
+
+            }
+        }
+
+        animate();
+
+        function animate(){
+            ctx.clearRect(0,0,myCanvas.width,myCanvas.height)
+
+            const sec=new Date().getTime()/1000;
+            const t=(Math.sin(sec*Math.PI)+1)/2;
+
+            const C=vLerp(A,B,t)
+            drawDot(C,"");
+
+            drawDot(A, "A");
+            drawDot(B, "B");
+
+            const {r,g,b}=vLerp(orange,blue,t);
+            myCanvas.style.backgroundColor=
+                `rgb(${r},${g},${b})`;
+            
+            requestAnimationFrame(animate);
+        }
+       
+
+        function vLerp(A,B,t){
+           const res={};
+           for(let attr in A){
+                res[attr]=lerp(A[attr],B[attr],t);
+           }
+           return res;
+        }
+
+        
+
+        function lerp(a,b,t){
+            return a+(b-a)*t;
+        }
+
+        function drawDot(pos, label){
+            ctx.beginPath();
+            ctx.fillStyle="white";
+            ctx.strokeStyle="black";
+            ctx.arc(pos.x,pos.y,10,0,Math.PI*2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle="black";
+            ctx.textAlign="center"
+            ctx.textBaseline="middle";
+            ctx.font="bold 14px Arial"
+            ctx.fillText(label, pos.x, pos.y)
+        }
+      
+
+
+
+    </script>
     
 </body>
 </html>
